@@ -70,6 +70,6 @@
   }
   
   .page-container {
-    @apply max-w-md mx-auto p-4 pb-20;
+    @apply w-full max-w-full sm:max-w-md mx-auto p-4 pb-20;
   }
 }

@@ -429,7 +429,8 @@ const AppointmentCalendar = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
     >
-      <div className="flex items-center gap-3 mb-4">
+      {/* ヘッダーボタンを折り返せるよう flex-wrap を追加 */}
+      <div className="flex flex-wrap items-center gap-3 mb-4">
         <button
           onClick={() => setCurrentDate(new Date())}
           className="text-sm px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors font-medium"
@@ -455,7 +456,7 @@ const AppointmentCalendar = () => {
       {/* 本日の予約統計 */}
       <div className="card mb-4 p-4">
         <h3 className="text-sm font-medium text-gray-500 mb-3">本日の予約状況</h3>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           <div>
             <div className="text-2xl font-bold text-blue-600">
               {appointments.filter(apt => {
@@ -491,7 +492,7 @@ const AppointmentCalendar = () => {
 
       {/* ビュー切り替えとナビゲーション */}
       <div className="card mb-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <button
               onClick={() => navigateDate('prev')}
@@ -499,7 +500,7 @@ const AppointmentCalendar = () => {
             >
               <ChevronLeft size={20} />
             </button>
-            <h2 className="text-lg font-medium min-w-[200px] text-center">
+            <h2 className="text-lg font-medium text-center md:min-w-[200px]">
               {getDateRangeLabel()}
             </h2>
             <button
