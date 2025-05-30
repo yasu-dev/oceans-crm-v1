@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-color: 30, 64, 175;
+  --secondary-color: 13, 148, 136;
+  --warning-color: 217, 119, 6;
+  --danger-color: 220, 38, 38;
+  --success-color: 22, 163, 74;
+  --neutral-color: 55, 65, 81;
+}
+
+@layer base {
+  html {
+    font-family: 'Noto Sans JP', sans-serif;
+    @apply text-gray-800;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  body {
+    @apply bg-gray-50;
+    overscroll-behavior: none;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition-all duration-200 flex items-center justify-center gap-2;
+  }
+  
+  .btn-primary {
+    @apply bg-blue-700 hover:bg-blue-800 text-white;
+  }
+  
+  .btn-secondary {
+    @apply bg-teal-600 hover:bg-teal-700 text-white;
+  }
+  
+  .btn-outline {
+    @apply border border-gray-300 hover:bg-gray-100 text-gray-700;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-sm p-4 border border-gray-100;
+  }
+  
+  .input {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+  }
+  
+  .status-active {
+    @apply text-blue-700 bg-blue-50;
+  }
+  
+  .status-caution {
+    @apply text-amber-600 bg-amber-50;
+  }
+  
+  .status-dormant {
+    @apply text-red-600 bg-red-50;
+  }
+  
+  .status-risk {
+    @apply text-red-700 bg-red-100;
+  }
+  
+  .badge {
+    @apply text-xs px-2 py-1 rounded-full font-medium;
+  }
+  
+  .page-container {
+    @apply max-w-md mx-auto p-4 pb-20;
+  }
+}
