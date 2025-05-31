@@ -315,7 +315,6 @@ const AppointmentCalendar = () => {
                           }}
                         >
                           <div className="font-medium">{apt.customerName}</div>
-                          <div>{apt.title}</div>
                         </div>
                       ))}
                     </div>
@@ -392,9 +391,6 @@ const AppointmentCalendar = () => {
                         {apt.startTime.getHours()}:{apt.startTime.getMinutes().toString().padStart(2, '0')} - 
                         {apt.endTime.getHours()}:{apt.endTime.getMinutes().toString().padStart(2, '0')}
                       </span>
-                    </div>
-                    <div className={`text-sm ${apt.status === 'cancelled' ? 'line-through' : ''}`}>
-                      {apt.title}
                     </div>
                     {apt.notes && (
                       <div className={`text-xs mt-1 ${
@@ -576,7 +572,6 @@ const AppointmentCalendar = () => {
                       )}
                     </div>
                     <div className="flex items-center justify-between mt-0.5">
-                      <span className="text-xs text-gray-600 truncate">{apt.title}</span>
                       {apt.notes && (
                         <span className="text-[10px] text-blue-500 flex-shrink-0 ml-2">メモ有</span>
                       )}
@@ -764,7 +759,6 @@ const AppointmentCalendar = () => {
                   <div className="flex items-start justify-between mb-2">
                     <div>
                       <h3 className="font-medium text-lg">{appointment.customerName}</h3>
-                      <p className="text-gray-600">{appointment.title}</p>
                     </div>
                     <span className={`px-2 py-1 text-xs rounded-full ${
                       appointment.status === 'cancelled' 

@@ -31,6 +31,47 @@ export interface Customer {
   email?: string;
   createdAt: string;
   updatedAt: string;
+  lineId?: string;
+  postalCode?: string;
+  prefecture?: string;
+  city?: string;
+  address1?: string;
+  gender?: 'male' | 'female' | 'other';
+  birthday?: string;
+  occupation?: string;
+  occupationDetail?: string;
+  storeVisitReason?: string;
+  storeVisitReasonDetail?: string;
+  physicalConditionAllergy?: string;
+  physicalConditionAllergyDetail?: string;
+  cosmetics?: string;
+  cosmeticsDetail?: string;
+  skinConcerns?: string;
+  skinConcernsDetail?: string;
+  pregnancy?: string;
+  pregnancyDetail?: string;
+  children?: string;
+  childrenDetail?: string;
+  medicalHistory?: string;
+  medicalHistoryDetail?: string;
+  medication?: string;
+  medicationDetail?: string;
+  selfCareHairRemoval?: string;
+  selfCareHairRemovalDetail?: string;
+  hairRemovalExperience?: string;
+  hairRemovalExperienceSalon?: string;
+  hairRemovalExperienceDetail?: string;
+  hairRemovalTrouble?: string;
+  hairRemovalTroubleDetail?: string;
+  idealBeautyImage?: string;
+  imageUrl?: string;
+  comment?: string;
+  nextAppointmentNote?: string;
+  previousAppointmentNote?: string;
+  contractor?: string;
+  subContractor?: string;
+  introducer?: string;
+  subIntroducer?: string;
 }
 
 export interface CustomerWithAnalytics extends Customer {

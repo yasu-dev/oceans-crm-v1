@@ -30,45 +30,73 @@ const CustomerList = () => {
   
   // Apply filters and search
   const filteredCustomers = useMemo(() => {
-    return customers.filter(customer => {
-      // Apply search filter first
-      if (searchQuery) {
+    let customersToFilter = [...customers];
+
+    // Apply search filter first
+    if (searchQuery) {
+      customersToFilter = customersToFilter.filter(customer => {
         const fullName = `${customer.lastName}${customer.firstName}`;
         const fullNameKana = `${customer.lastNameKana}${customer.firstNameKana}`;
-        if (!fullName.includes(searchQuery) && !fullNameKana.includes(searchQuery)) {
-          return false;
-        }
-      }
-      
-      // Apply tab filter
+        return fullName.includes(searchQuery) || fullNameKana.includes(searchQuery);
+      });
+    }
+
+    // Apply tab filter
+    customersToFilter = customersToFilter.filter(customer => {
       const status = calculateCustomerStatus(customer, visits);
-      
       switch (activeTab) {
         case 'all':
           return true;
-          
         case 'last-month-visited':
           return status === 'last-month-visited';
-          
         case 'two-months-no-visit':
           return status === 'two-months-no-visit';
-          
         case 'repeating-with-reservation':
           return status === 'repeating-with-reservation';
-          
         case 'repeating-no-reservation':
           return status === 'repeating-no-reservation';
-          
         case 'three-months-no-visit':
           return status === 'three-months-no-visit';
-          
         case 'graduated':
           return status === 'graduated';
-          
         default:
           return true;
       }
     });
+
+    // Sort by lastVisitDate (descending)
+    customersToFilter.sort((a, b) => {
+      // 各顧客の最終来店日を実際の来店履歴から取得
+      const aVisits = visits.filter(v => v.customerId === a.id);
+      const bVisits = visits.filter(v => v.customerId === b.id);
+      
+      let aLastVisit: Date | null = null;
+      let bLastVisit: Date | null = null;
+      
+      if (aVisits.length > 0) {
+        const sortedAVisits = [...aVisits].sort((v1, v2) => 
+          new Date(v2.date).getTime() - new Date(v1.date).getTime()
+        );
+        aLastVisit = new Date(sortedAVisits[0].date);
+      }
+      
+      if (bVisits.length > 0) {
+        const sortedBVisits = [...bVisits].sort((v1, v2) => 
+          new Date(v2.date).getTime() - new Date(v1.date).getTime()
+        );
+        bLastVisit = new Date(sortedBVisits[0].date);
+      }
+      
+      // 来店履歴がない場合は最後に表示
+      if (!aLastVisit && !bLastVisit) return 0;
+      if (!aLastVisit) return 1;
+      if (!bLastVisit) return -1;
+      
+      // 最終来店日が新しい順（降順）
+      return bLastVisit.getTime() - aLastVisit.getTime();
+    });
+
+    return customersToFilter;
   }, [customers, visits, activeTab, searchQuery]);
   
   // Tab configuration

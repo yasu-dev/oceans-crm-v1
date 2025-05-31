@@ -45,49 +45,73 @@ const StatusDistribution = () => {
     <div className="card">
       <h3 className="text-sm font-medium text-gray-500 mb-2">顧客ステータス分布</h3>
       
-      <div className="h-6 w-full bg-gray-100 rounded-full overflow-hidden flex">
+      <div className="h-8 w-full bg-gray-100 rounded-full overflow-hidden flex relative">
         <motion.div 
           initial={{ width: 0 }}
           animate={{ width: barWidth['repeating-with-reservation'] }}
           transition={{ duration: 0.8, ease: "easeOut" }}
-          className="h-full bg-green-600" 
+          className="h-full bg-green-600 flex items-center justify-center" 
           style={{ width: barWidth['repeating-with-reservation'] }}
-        />
+        >
+          {percentages['repeating-with-reservation'] >= 5 && (
+            <span className="text-white text-xs font-medium">{percentages['repeating-with-reservation']}%</span>
+          )}
+        </motion.div>
         <motion.div 
           initial={{ width: 0 }}
           animate={{ width: barWidth['repeating-no-reservation'] }}
           transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
-          className="h-full bg-amber-500" 
+          className="h-full bg-amber-500 flex items-center justify-center" 
           style={{ width: barWidth['repeating-no-reservation'] }}
-        />
+        >
+          {percentages['repeating-no-reservation'] >= 5 && (
+            <span className="text-white text-xs font-medium">{percentages['repeating-no-reservation']}%</span>
+          )}
+        </motion.div>
         <motion.div 
           initial={{ width: 0 }}
           animate={{ width: barWidth['last-month-visited'] }}
           transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-          className="h-full bg-yellow-500" 
+          className="h-full bg-yellow-500 flex items-center justify-center" 
           style={{ width: barWidth['last-month-visited'] }}
-        />
+        >
+          {percentages['last-month-visited'] >= 5 && (
+            <span className="text-white text-xs font-medium">{percentages['last-month-visited']}%</span>
+          )}
+        </motion.div>
         <motion.div 
           initial={{ width: 0 }}
           animate={{ width: barWidth['two-months-no-visit'] }}
           transition={{ duration: 0.8, ease: "easeOut", delay: 0.3 }}
-          className="h-full bg-orange-500" 
+          className="h-full bg-orange-500 flex items-center justify-center" 
           style={{ width: barWidth['two-months-no-visit'] }}
-        />
+        >
+          {percentages['two-months-no-visit'] >= 5 && (
+            <span className="text-white text-xs font-medium">{percentages['two-months-no-visit']}%</span>
+          )}
+        </motion.div>
         <motion.div 
           initial={{ width: 0 }}
           animate={{ width: barWidth['three-months-no-visit'] }}
           transition={{ duration: 0.8, ease: "easeOut", delay: 0.4 }}
-          className="h-full bg-red-500" 
+          className="h-full bg-red-500 flex items-center justify-center" 
           style={{ width: barWidth['three-months-no-visit'] }}
-        />
+        >
+          {percentages['three-months-no-visit'] >= 5 && (
+            <span className="text-white text-xs font-medium">{percentages['three-months-no-visit']}%</span>
+          )}
+        </motion.div>
         <motion.div 
           initial={{ width: 0 }}
           animate={{ width: barWidth['graduated'] }}
           transition={{ duration: 0.8, ease: "easeOut", delay: 0.5 }}
-          className="h-full bg-gray-500" 
+          className="h-full bg-gray-500 flex items-center justify-center" 
           style={{ width: barWidth['graduated'] }}
-        />
+        >
+          {percentages['graduated'] >= 5 && (
+            <span className="text-white text-xs font-medium">{percentages['graduated']}%</span>
+          )}
+        </motion.div>
       </div>
       
       <div className="grid grid-cols-2 gap-2 mt-3 text-xs">

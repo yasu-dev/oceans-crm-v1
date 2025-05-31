@@ -16,7 +16,6 @@ const AppointmentEdit = () => {
   const [formData, setFormData] = useState({
     customerId: '',
     customerName: '',
-    title: '',
     date: '',
     startTime: '',
     endTime: '',
@@ -31,7 +30,6 @@ const AppointmentEdit = () => {
       setFormData({
         customerId: appointment.customerId,
         customerName: appointment.customerName,
-        title: appointment.title,
         date: format(startDate, 'yyyy-MM-dd'),
         startTime: format(startDate, 'HH:mm'),
         endTime: format(endDate, 'HH:mm'),
@@ -69,7 +67,6 @@ const AppointmentEdit = () => {
     updateAppointment(appointment.id, {
       customerId: formData.customerId,
       customerName: formData.customerName,
-      title: formData.title,
       startTime: startDateTime,
       endTime: endDateTime,
       notes: formData.notes,
@@ -129,22 +126,6 @@ const AppointmentEdit = () => {
                 </option>
               ))}
             </select>
-          </div>
-
-          {/* コース */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              <FileText className="inline w-4 h-4 mr-1" />
-              コース
-            </label>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="例：カット + カラー"
-              required
-            />
           </div>
 
           {/* 日付 */}

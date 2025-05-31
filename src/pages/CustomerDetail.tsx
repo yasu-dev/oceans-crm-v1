@@ -33,6 +33,8 @@ const CustomerDetail = () => {
   const [showVisitForm, setShowVisitForm] = useState(false);
   const [visitDate, setVisitDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [visitNotes, setVisitNotes] = useState('');
+  const [selectedAppointment, setSelectedAppointment] = useState<typeof appointments[0] | null>(null);
+  const [selectedVisit, setSelectedVisit] = useState<typeof visits[0] | null>(null);
   
   const customer = customers.find(c => c.id === id);
   
@@ -115,14 +117,10 @@ const CustomerDetail = () => {
           <StatusBadge status={status} size="md" />
         </div>
         
-        <div className="text-sm text-gray-500 mb-4">
-          ID: {customer.id}
-        </div>
-        
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div>
-            <div className="text-xs text-gray-500 mb-1">担当者</div>
-            <div>{customer.primaryStaff}</div>
+            <div className="text-xs text-gray-500 mb-1">電話番号</div>
+            <div>{customer.phone}</div>
           </div>
           <div>
             <div className="text-xs text-gray-500 mb-1">リスクスコア</div>
@@ -136,12 +134,166 @@ const CustomerDetail = () => {
         
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <div className="text-xs text-gray-500 mb-1">コース</div>
-            <div>{customer.contract.course}</div>
+            <div className="text-xs text-gray-500 mb-1">メールアドレス</div>
+            <div className="text-sm">{customer.email}</div>
           </div>
           <div>
-            <div className="text-xs text-gray-500 mb-1">契約金額</div>
+            <div className="text-xs text-gray-500 mb-1">施術金額</div>
             <div className="font-medium">¥{customer.contract.amount.toLocaleString()}</div>
+          </div>
+        </div>
+      </motion.div>
+      
+      {/* New Customer Information Section */}
+      <motion.div variants={itemVariants} className="card mb-4">
+        <h2 className="text-lg font-medium mb-4 text-gray-800">顧客情報詳細</h2>
+        
+        <div className="space-y-4">
+          {/* 基本情報 */}
+          <div className="border-b border-gray-100 pb-4">
+            <h3 className="text-sm font-medium text-gray-600 mb-3">基本情報</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+              <InfoItem label="顧客番号" value={customer.id} />
+              <InfoItem label="LINE ID" value={customer.lineId} />
+              <InfoItem label="氏名" value={`${customer.lastName} ${customer.firstName}`} />
+              <InfoItem label="氏名 (カナ)" value={`${customer.lastNameKana} ${customer.firstNameKana}`} />
+              <InfoItem label="性別" value={customer.gender === 'male' ? '男性' : customer.gender === 'female' ? '女性' : 'その他'} />
+              <InfoItem label="生年月日" value={customer.birthday ? format(parseISO(customer.birthday), 'yyyy年M月d日') : '未設定'} />
+            </div>
+          </div>
+          
+          {/* 連絡先情報 */}
+          <div className="border-b border-gray-100 pb-4">
+            <h3 className="text-sm font-medium text-gray-600 mb-3">連絡先</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+              <InfoItem label="電話番号" value={customer.phone} />
+              <InfoItem label="メールアドレス" value={customer.email} />
+              <InfoItem label="郵便番号" value={customer.postalCode} />
+              <InfoItem label="都道府県" value={customer.prefecture} />
+              <InfoItem label="市区町村" value={customer.city} />
+              <InfoItem label="住所" value={customer.address1} />
+            </div>
+          </div>
+          
+          {/* 職業・来店情報 */}
+          <div>
+            <h3 className="text-sm font-medium text-gray-600 mb-3">職業・来店情報</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+              <InfoItem label="職業" value={customer.occupation} />
+              <InfoItem label="職業詳細" value={customer.occupationDetail} />
+              <InfoItem label="来店動機" value={customer.storeVisitReason} />
+              <InfoItem label="来店動機詳細" value={customer.storeVisitReasonDetail} />
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      <motion.div variants={itemVariants} className="card mb-4">
+        <h2 className="text-lg font-medium mb-4 text-gray-800">健康・体質情報</h2>
+        
+        <div className="space-y-4">
+          {/* アレルギー・体調 */}
+          <div className="border-b border-gray-100 pb-4">
+            <h3 className="text-sm font-medium text-gray-600 mb-3">アレルギー・体調</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+              <InfoItem label="体調・アレルギー" value={customer.physicalConditionAllergy} />
+              <InfoItem label="詳細" value={customer.physicalConditionAllergyDetail} />
+            </div>
+          </div>
+          
+          {/* 肌・化粧品 */}
+          <div className="border-b border-gray-100 pb-4">
+            <h3 className="text-sm font-medium text-gray-600 mb-3">肌・化粧品</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+              <InfoItem label="化粧品" value={customer.cosmetics} />
+              <InfoItem label="化粧品詳細" value={customer.cosmeticsDetail} />
+              <InfoItem label="肌の悩み" value={customer.skinConcerns} />
+              <InfoItem label="肌の悩み詳細" value={customer.skinConcernsDetail} />
+            </div>
+          </div>
+          
+          {/* 妊娠・子供 */}
+          <div className="border-b border-gray-100 pb-4">
+            <h3 className="text-sm font-medium text-gray-600 mb-3">妊娠・子供</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+              <InfoItem label="妊娠" value={customer.pregnancy} />
+              <InfoItem label="妊娠詳細" value={customer.pregnancyDetail} />
+              <InfoItem label="子供" value={customer.children} />
+              <InfoItem label="子供詳細" value={customer.childrenDetail} />
+            </div>
+          </div>
+          
+          {/* 既往歴・薬 */}
+          <div>
+            <h3 className="text-sm font-medium text-gray-600 mb-3">既往歴・薬</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+              <InfoItem label="既往歴" value={customer.medicalHistory} />
+              <InfoItem label="既往歴詳細" value={customer.medicalHistoryDetail} />
+              <InfoItem label="服用中の薬" value={customer.medication} />
+              <InfoItem label="服用中の薬詳細" value={customer.medicationDetail} />
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      <motion.div variants={itemVariants} className="card mb-4">
+        <h2 className="text-lg font-medium mb-4 text-gray-800">脱毛経験・希望</h2>
+        
+        <div className="space-y-4">
+          {/* 自己処理 */}
+          <div className="border-b border-gray-100 pb-4">
+            <h3 className="text-sm font-medium text-gray-600 mb-3">自己処理</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+              <InfoItem label="自己処理方法" value={customer.selfCareHairRemoval} />
+              <InfoItem label="詳細" value={customer.selfCareHairRemovalDetail} />
+            </div>
+          </div>
+          
+          {/* 脱毛経験 */}
+          <div className="border-b border-gray-100 pb-4">
+            <h3 className="text-sm font-medium text-gray-600 mb-3">脱毛経験</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+              <InfoItem label="脱毛経験" value={customer.hairRemovalExperience} />
+              <InfoItem label="経験サロン" value={customer.hairRemovalExperienceSalon} />
+              <InfoItem label="詳細" value={customer.hairRemovalExperienceDetail} />
+              <InfoItem label="脱毛トラブル" value={customer.hairRemovalTrouble} />
+              <InfoItem label="トラブル詳細" value={customer.hairRemovalTroubleDetail} />
+            </div>
+          </div>
+          
+          {/* 理想 */}
+          <div>
+            <h3 className="text-sm font-medium text-gray-600 mb-3">理想</h3>
+            <div className="grid grid-cols-1 gap-y-3">
+              <InfoItem label="美の理想イメージ" value={customer.idealBeautyImage} />
+            </div>
+          </div>
+        </div>
+      </motion.div>
+      
+      <motion.div variants={itemVariants} className="card mb-4">
+        <h2 className="text-lg font-medium mb-4 text-gray-800">その他の情報</h2>
+        
+        <div className="space-y-4">
+          {/* メモ情報 */}
+          <div className="border-b border-gray-100 pb-4">
+            <h3 className="text-sm font-medium text-gray-600 mb-3">メモ・コメント</h3>
+            <div className="grid grid-cols-1 gap-y-3">
+              <InfoItem label="コメント" value={customer.comment} />
+              <InfoItem label="次回予約メモ" value={customer.nextAppointmentNote} />
+              <InfoItem label="前回予約メモ" value={customer.previousAppointmentNote} />
+            </div>
+          </div>
+          
+          {/* 契約・紹介情報 */}
+          <div>
+            <h3 className="text-sm font-medium text-gray-600 mb-3">契約・紹介</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+              <InfoItem label="契約者" value={customer.contractor} />
+              <InfoItem label="サブ契約者" value={customer.subContractor} />
+              <InfoItem label="紹介者" value={customer.introducer} />
+              <InfoItem label="サブ紹介者" value={customer.subIntroducer} />
+            </div>
           </div>
         </div>
       </motion.div>
@@ -152,7 +304,7 @@ const CustomerDetail = () => {
           <Phone size={18} />
           <span>電話する</span>
         </button>
-        <button className="btn btn-secondary">
+        <button className="btn bg-[#00B900] hover:bg-[#00A000] text-white">
           <MessageCircle size={18} />
           <span>LINEする</span>
         </button>
@@ -161,6 +313,16 @@ const CustomerDetail = () => {
       {/* Customer analytics */}
       <motion.div variants={itemVariants} className="card mb-4">
         <h2 className="text-lg font-medium mb-3">来店分析</h2>
+        
+        <div className="flex items-center gap-3 mb-3">
+          <div className="p-2 rounded-full bg-purple-50 text-purple-700">
+            <Calendar size={20} />
+          </div>
+          <div>
+            <div className="text-sm text-gray-500">総来店回数</div>
+            <div className="font-medium">{customerVisits.length}回</div>
+          </div>
+        </div>
         
         <div className="flex items-center gap-3 mb-3">
           <div className="p-2 rounded-full bg-blue-50 text-blue-700">
@@ -193,24 +355,24 @@ const CustomerDetail = () => {
             <div className="font-medium">{recommendation}</div>
           </div>
         </div>
-        
-        <div className="mt-4">
-          <div className="text-sm text-gray-500 mb-1">消化状況</div>
-          <ProgressBar 
-            value={10 - customer.contract.remainingVisits} 
-            max={10}
-            color="blue"
-          />
-        </div>
       </motion.div>
       
       {/* 次回予約 */}
       {futureAppointments.length > 0 && (
         <motion.div variants={itemVariants} className="card mb-4">
-          <h2 className="text-lg font-medium mb-3">次回予約</h2>
+          <div className="flex justify-between items-center mb-3">
+            <h2 className="text-lg font-medium">次回予約</h2>
+            <div className="text-sm text-gray-500">
+              来店回数: {customerVisits.length}回
+            </div>
+          </div>
           <div className="space-y-2">
             {futureAppointments.map(apt => (
-              <div key={apt.id} className="p-3 bg-blue-50 rounded-lg">
+              <div 
+                key={apt.id} 
+                className="p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
+                onClick={() => setSelectedAppointment(apt)}
+              >
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="font-medium text-blue-900">
@@ -218,16 +380,19 @@ const CustomerDetail = () => {
                       {' '}
                       {format(new Date(apt.startTime), 'HH:mm')} - {format(new Date(apt.endTime), 'HH:mm')}
                     </div>
-                    <div className="text-sm text-blue-700 mt-1">
-                      {apt.title}
-                    </div>
                     {apt.notes && (
                       <div className="text-xs text-blue-600 mt-1">
                         {apt.notes}
                       </div>
                     )}
                   </div>
-                  <button className="text-blue-700 hover:text-blue-800">
+                  <button 
+                    className="text-blue-700 hover:text-blue-800"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      // Handle edit action
+                    }}
+                  >
                     <Edit size={16} />
                   </button>
                 </div>
@@ -255,12 +420,16 @@ const CustomerDetail = () => {
         {sortedVisits.length > 0 ? (
           <div className="space-y-3">
             {sortedVisits.map(visit => (
-              <div key={visit.id} className="card">
+              <div 
+                key={visit.id} 
+                className="card cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => setSelectedVisit(visit)}
+              >
                 <div className="flex gap-3">
                   <div className="p-2 bg-blue-50 text-blue-700 rounded-full h-min">
                     <Calendar size={20} />
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <div className="font-medium">
                       {format(parseISO(visit.date), 'yyyy年M月d日(E)', { locale: ja })}
                     </div>
@@ -340,8 +509,162 @@ const CustomerDetail = () => {
           </motion.div>
         </div>
       )}
+      
+      {/* 予約詳細モーダル */}
+      {selectedAppointment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <motion.div 
+            className="bg-white rounded-lg p-6 max-w-md w-full"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+          >
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-lg font-medium">予約詳細</h3>
+              <button 
+                onClick={() => setSelectedAppointment(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">予約日時</div>
+                <div className="font-medium">
+                  {format(new Date(selectedAppointment.startTime), 'yyyy年M月d日(E)', { locale: ja })}
+                </div>
+                <div className="text-sm text-gray-600">
+                  {format(new Date(selectedAppointment.startTime), 'HH:mm')} - 
+                  {format(new Date(selectedAppointment.endTime), 'HH:mm')}
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">担当スタッフ</div>
+                <div className="text-sm">{selectedAppointment.staffName || '未設定'}</div>
+              </div>
+              
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">メニュー</div>
+                <div className="text-sm">{selectedAppointment.menu || '未設定'}</div>
+              </div>
+              
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">料金</div>
+                <div className="text-sm">¥{selectedAppointment.price?.toLocaleString() || '0'}</div>
+              </div>
+              
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">メモ</div>
+                <div className="text-sm">{selectedAppointment.notes || 'なし'}</div>
+              </div>
+              
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">ステータス</div>
+                <div className="text-sm">
+                  {selectedAppointment.status === 'scheduled' ? '予約確定' : 
+                   selectedAppointment.status === 'cancelled' ? 'キャンセル' : 
+                   selectedAppointment.status === 'completed' ? '完了' : '不明'}
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-6 flex justify-end">
+              <button 
+                onClick={() => setSelectedAppointment(null)}
+                className="btn btn-secondary"
+              >
+                閉じる
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+      
+      {/* 来店履歴詳細モーダル */}
+      {selectedVisit && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <motion.div 
+            className="bg-white rounded-lg p-6 max-w-md w-full"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+          >
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-lg font-medium">来店履歴詳細</h3>
+              <button 
+                onClick={() => setSelectedVisit(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="space-y-3">
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">来店日</div>
+                <div className="font-medium">
+                  {format(parseISO(selectedVisit.date), 'yyyy年M月d日(E)', { locale: ja })}
+                </div>
+              </div>
+              
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">担当スタッフ</div>
+                <div className="text-sm">{selectedVisit.staffName || customer.primaryStaff || '未設定'}</div>
+              </div>
+              
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">施術内容</div>
+                <div className="text-sm">{selectedVisit.treatmentContent || '未設定'}</div>
+              </div>
+              
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">来店時間</div>
+                <div className="text-sm">{selectedVisit.visitTime || '未設定'}</div>
+              </div>
+              
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">退店時間</div>
+                <div className="text-sm">{selectedVisit.leaveTime || '未設定'}</div>
+              </div>
+              
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">金額</div>
+                <div className="text-sm">¥{selectedVisit.amount?.toLocaleString() || '0'}</div>
+              </div>
+              
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">支払方法</div>
+                <div className="text-sm">{selectedVisit.paymentMethod || '未設定'}</div>
+              </div>
+              
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <div className="text-xs text-gray-500 mb-1">メモ</div>
+                <div className="text-sm">{selectedVisit.notes || 'なし'}</div>
+              </div>
+            </div>
+            
+            <div className="mt-6 flex justify-end">
+              <button 
+                onClick={() => setSelectedVisit(null)}
+                className="btn btn-secondary"
+              >
+                閉じる
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </motion.div>
   );
 };
+
+// Helper component for displaying info items
+const InfoItem = ({ label, value }: { label: string; value?: string | number }) => (
+  <div className="bg-gray-50 p-3 rounded-lg">
+    <div className="text-xs text-gray-500 mb-1 font-medium">{label}</div>
+    <div className="text-sm text-gray-800">{value || <span className="text-gray-400">未設定</span>}</div>
+  </div>
+);
 
 export default CustomerDetail;

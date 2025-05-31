@@ -1,32 +1,14 @@
 import { useState } from 'react';
-import { useApp } from '../contexts/AppContext';
 import { motion } from 'framer-motion';
-import { Users, Calendar, AlertTriangle, UserPlus, Clock } from 'lucide-react';
+import { format } from 'date-fns';
+import { ja } from 'date-fns/locale';
+import { Calendar, Bell } from 'lucide-react';
 
-import StatCard from '../components/dashboard/StatCard';
 import StatusDistribution from '../components/dashboard/StatusDistribution';
 import ImportantSegments from '../components/dashboard/ImportantSegments';
 import TodayAppointments from '../components/dashboard/TodayAppointments';
-import RecentNewCustomers from '../components/dashboard/RecentNewCustomers';
 
 const Dashboard = () => {
-  const { 
-    todayVisitCount, 
-    todayVisitTarget, 
-    followUpCount, 
-    followUpCompleted,
-    customers,
-    appointments,
-    visits,
-  } = useApp();
-  
-  // 最近の新規顧客数を計算（過去30日）
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  const recentNewCustomers = customers.filter(customer => 
-    new Date(customer.createdAt) >= thirtyDaysAgo
-  ).length;
-  
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -44,6 +26,22 @@ const Dashboard = () => {
     visible: { y: 0, opacity: 1 }
   };
   
+  // お知らせのサンプルデータ（本来は他のCRM管理アプリから取得）
+  const announcements = [
+    {
+      id: 1,
+      message: "本日の営業時間は19時までとなります。",
+      createdAt: new Date().toISOString(),
+      isImportant: true,
+    },
+    {
+      id: 2,
+      message: "月末の報告書提出をお忘れなく。",
+      createdAt: new Date().toISOString(),
+      isImportant: false,
+    }
+  ];
+  
   return (
     <motion.div 
       className="page-container"
@@ -51,45 +49,55 @@ const Dashboard = () => {
       initial="hidden"
       animate="visible"
     >
-      {/* Date display */}
-      <div className="text-sm text-gray-500 mb-2">
-        {new Date().toLocaleDateString('ja-JP', { 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric',
-          weekday: 'long'
-        })}
-      </div>
+      {/* Date display - 改善版 */}
+      <motion.div variants={itemVariants} className="card mb-4 bg-gradient-to-r from-blue-50 to-indigo-50">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-white rounded-lg shadow-sm">
+            <Calendar className="text-blue-600" size={24} />
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-gray-800">
+              {format(new Date(), 'M月d日', { locale: ja })}
+              <span className="text-lg ml-2 text-blue-600">
+                ({format(new Date(), 'E', { locale: ja })})
+              </span>
+            </div>
+            <div className="text-sm text-gray-600">
+              {format(new Date(), 'yyyy年', { locale: ja })}
+            </div>
+          </div>
+        </div>
+      </motion.div>
       
-      {/* Stats grid */}
-      <div className="grid grid-cols-2 gap-3 mb-4">
-        <StatCard 
-          title="本日の予約"
-          value={`${todayVisitCount}件`}
-          icon={<Calendar size={20} />}
-          color="blue"
-          subtitle={`目標: ${todayVisitTarget}件`}
-        />
-        <StatCard 
-          title="要フォロー"
-          value={followUpCount}
-          icon={<AlertTriangle size={20} />}
-          color="amber"
-          subtitle={`${followUpCompleted}件完了`}
-        />
-        <StatCard 
-          title="新規顧客（30日）"
-          value={recentNewCustomers}
-          icon={<UserPlus size={20} />}
-          color="green"
-        />
-        <StatCard 
-          title="総顧客数"
-          value={customers.length}
-          icon={<Users size={20} />}
-          color="teal"
-        />
-      </div>
+      {/* お知らせ欄 */}
+      <motion.div variants={itemVariants} className="card mb-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Bell size={18} className="text-amber-600" />
+          <h2 className="font-medium">お知らせ</h2>
+        </div>
+        <div className="space-y-2">
+          {announcements.length > 0 ? (
+            announcements.map(announcement => (
+              <div 
+                key={announcement.id} 
+                className={`p-3 rounded-lg text-sm ${
+                  announcement.isImportant 
+                    ? 'bg-amber-50 border border-amber-200' 
+                    : 'bg-gray-50'
+                }`}
+              >
+                <p className={announcement.isImportant ? 'text-amber-800' : 'text-gray-700'}>
+                  {announcement.message}
+                </p>
+              </div>
+            ))
+          ) : (
+            <div className="text-sm text-gray-500 text-center py-2">
+              お知らせはありません
+            </div>
+          )}
+        </div>
+      </motion.div>
       
       {/* Today's appointments */}
       <motion.div variants={itemVariants} className="mb-4">
@@ -100,13 +108,8 @@ const Dashboard = () => {
       <ImportantSegments />
       
       {/* Customer status distribution */}
-      <motion.div variants={itemVariants} className="mb-4">
-        <StatusDistribution />
-      </motion.div>
-      
-      {/* Recent new customers */}
       <motion.div variants={itemVariants}>
-        <RecentNewCustomers />
+        <StatusDistribution />
       </motion.div>
     </motion.div>
   );

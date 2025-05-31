@@ -4,6 +4,12 @@ export interface Visit {
   date: string;
   notes?: string;
   createdAt: string;
+  staffName?: string;
+  treatmentContent?: string;
+  visitTime?: string;
+  leaveTime?: string;
+  amount?: number;
+  paymentMethod?: string;
 }
 
 export interface FollowUp {

@@ -20,25 +20,24 @@ const BottomNavigation = () => {
   
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-10">
-      <div className="max-w-md mx-auto px-4 py-1 flex justify-between">
+      <div className="max-w-md mx-auto px-4 py-3 flex justify-around">
         {navigationItems.map((item) => (
           <button
             key={item.path}
             onClick={() => navigate(item.path)}
-            className={`px-3 py-2 flex flex-col items-center relative ${
+            className={`flex flex-col items-center relative ${
               isActive(item.path) ? 'text-blue-700' : 'text-gray-500'
             }`}
           >
             {isActive(item.path) && (
               <motion.div
                 layoutId="nav-indicator"
-                className="absolute top-0 h-1 w-6 bg-blue-700 rounded-b-full"
+                className="absolute -top-3 h-1 w-8 bg-blue-700 rounded-b-full"
                 initial={false}
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               />
             )}
-            <item.icon size={20} />
-            <span className="text-xs mt-1">{item.label}</span>
+            <item.icon size={24} />
           </button>
         ))}
       </div>

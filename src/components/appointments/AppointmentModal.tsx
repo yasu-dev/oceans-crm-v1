@@ -108,7 +108,7 @@ const AppointmentModal: React.FC<AppointmentModalProps> = ({
               <div className="flex items-start gap-3">
                 <User className="text-blue-600 mt-1" size={20} />
                 <div>
-                  <div className="text-sm text-gray-600">コース</div>
+                  <div className="text-sm text-gray-600">施術内容</div>
                   <div className="font-medium">{appointment.title}</div>
                 </div>
               </div>

@@ -38,7 +38,7 @@ const AppointmentNew = () => {
       customerName: `${selectedCustomer.lastName}${selectedCustomer.firstName}`,
       startTime: startDateTime,
       endTime: endDateTime,
-      title: selectedCustomer.contract.course,
+      title: '施術',
       notes: formData.notes,
       status: 'scheduled' as const,
       createdAt: new Date(),
@@ -93,7 +93,7 @@ const AppointmentNew = () => {
               <option value="">選択してください</option>
               {customers.map(customer => (
                 <option key={customer.id} value={customer.id}>
-                  {customer.lastName} {customer.firstName} - {customer.contract.course}
+                  {customer.lastName} {customer.firstName}
                 </option>
               ))}
             </select>

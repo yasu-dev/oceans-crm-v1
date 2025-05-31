@@ -44,23 +44,10 @@ const CustomerCard = ({ customer, visits }: CustomerCardProps) => {
           <StatusBadge status={status} />
         </div>
         
-        <div className="text-sm text-gray-500 mb-3">
-          担当: {customer.primaryStaff}
-        </div>
-        
         <div className="flex justify-between text-sm mb-2">
           <div className="flex items-center gap-1 text-gray-600">
             <Calendar size={16} />
             <span>最終来店: {lastVisitDate}</span>
-          </div>
-          <div className="font-medium">
-            残り{customer.contract.remainingVisits}回
-          </div>
-        </div>
-        
-        <div className="flex justify-between text-sm">
-          <div className="text-gray-700">
-            {customer.contract.course}
           </div>
           <div className="font-medium">
             ¥{customer.contract.amount.toLocaleString()}
