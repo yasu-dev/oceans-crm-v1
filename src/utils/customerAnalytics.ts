@@ -6,6 +6,10 @@ import { differenceInDays, differenceInMonths, parseISO, startOfMonth, endOfMont
  * Calculate the customer's current status based on visit history
  */
 export function calculateCustomerStatus(customer: Customer, visits: Visit[]): CustomerStatus {
+  // モックデータにstatusフィールドが指定されている場合はそれを優先
+  if (typeof customer.status !== 'undefined') {
+    return customer.status;
+  }
   const customerVisits = visits.filter(visit => visit.customerId === customer.id);
   
   // 契約終了（残回数0）の場合は卒業

@@ -4,7 +4,6 @@ import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { Calendar, Bell } from 'lucide-react';
 
-import StatusDistribution from '../components/dashboard/StatusDistribution';
 import ImportantSegments from '../components/dashboard/ImportantSegments';
 import TodayAppointments from '../components/dashboard/TodayAppointments';
 
@@ -106,11 +105,6 @@ const Dashboard = () => {
       
       {/* Important segments alerts */}
       <ImportantSegments />
-      
-      {/* Customer status distribution */}
-      <motion.div variants={itemVariants}>
-        <StatusDistribution />
-      </motion.div>
     </motion.div>
   );
 };

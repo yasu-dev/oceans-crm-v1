@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useApp } from '../contexts/AppContext';
 import { calculateCustomerStatus, hasVisitedInMonth, hasFutureReservation, calculateLossAmount } from '../utils/customerAnalytics';
 import { TrendingUp, TrendingDown, Calendar, Users, UserCheck, UserX, DollarSign } from 'lucide-react';
+import StatusDistribution from '../components/dashboard/StatusDistribution';
 import { 
   LineChart, 
   Line, 
@@ -495,37 +496,9 @@ const Analysis = () => {
           </div>
         </motion.div>
         
-        {/* Customer Status Distribution */}
-        <motion.div variants={itemVariants} className="card mb-6">
-          <h3 className="font-semibold mb-3">顧客ステータス分布</h3>
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            {pieData.map((item) => (
-              <div key={item.name} className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded" style={{ backgroundColor: item.color }} />
-                <span className="text-xs">{item.name}</span>
-                <span className="text-xs text-gray-500 ml-auto">{item.value}名</span>
-              </div>
-            ))}
-          </div>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie
-                data={pieData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={false}
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {pieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value: any) => `${value}名`} />
-            </PieChart>
-          </ResponsiveContainer>
+        {/* Customer Status Distribution from Dashboard */}
+        <motion.div variants={itemVariants}>
+          <StatusDistribution />
         </motion.div>
         
         {/* Loss Amount Trend */}

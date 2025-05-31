@@ -6,6 +6,40 @@ import { mockCustomers, mockVisits, mockAppointments } from '../data/mockData';
 import { calculateCustomerStatus, calculateLossAmount, getImportantSegments } from '../utils/customerAnalytics';
 import { useAuth } from './AuthContext';
 
+// データソースのインターフェース
+interface DataSource {
+  loadCustomers: () => Promise<Customer[]>;
+  loadVisits: () => Promise<Visit[]>;
+  loadAppointments: () => Promise<Appointment[]>;
+}
+
+// モックデータソース
+const mockDataSource: DataSource = {
+  loadCustomers: async () => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return mockCustomers;
+  },
+  loadVisits: async () => {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return mockVisits;
+  },
+  loadAppointments: async () => {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return mockAppointments;
+  }
+};
+
+// 将来的にはAPIデータソースも追加可能
+// const apiDataSource: DataSource = {
+//   loadCustomers: async () => await fetch('/api/customers').then(res => res.json()),
+//   loadVisits: async () => await fetch('/api/visits').then(res => res.json()),
+//   loadAppointments: async () => await fetch('/api/appointments').then(res => res.json()),
+// };
+
+// 現在のデータソース（環境変数で切り替え可能）
+const dataSource = mockDataSource;
+
 interface AppContextType {
   customers: Customer[];
   visits: Visit[];
@@ -45,12 +79,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
     
-    setTimeout(() => {
-      setCustomers(mockCustomers);
-      setVisits(mockVisits);
-      setAppointments(mockAppointments);
-      setIsLoading(false);
-    }, 1000);
+    dataSource.loadCustomers().then(customers => {
+      dataSource.loadVisits().then(visits => {
+        dataSource.loadAppointments().then(appointments => {
+          setCustomers(customers);
+          setVisits(visits);
+          setAppointments(appointments);
+          setIsLoading(false);
+        });
+      });
+    });
   }, [isAuthenticated]);
   
   // Calculate dashboard metrics
