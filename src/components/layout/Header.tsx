@@ -27,7 +27,7 @@ const Header = () => {
       case path.includes('/appointments'):
         return '予約カレンダー';
       default:
-        return '脱毛サロン顧客管理';
+        return 'OCEANS CRM';
     }
   };
   

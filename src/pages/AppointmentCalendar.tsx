@@ -453,41 +453,183 @@ const AppointmentCalendar = () => {
         </button>
       </div>
 
-      {/* 本日の予約統計 */}
-      <div className="card mb-4 p-4">
-        <h3 className="text-sm font-medium text-gray-500 mb-3">本日の予約状況</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          <div>
-            <div className="text-2xl font-bold text-blue-600">
-              {appointments.filter(apt => {
-                const aptDate = new Date(apt.startTime);
-                const today = new Date();
-                return aptDate.toDateString() === today.toDateString() && apt.status === 'scheduled';
-              }).length}
+      {/* 本日の予約状況 - スマホ最適化版 */}
+      <div className="card mb-4 p-3 bg-gradient-to-br from-blue-50 to-white">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-semibold text-gray-700 flex items-center gap-1">
+            <Calendar size={16} className="text-blue-600" />
+            本日の予約
+          </h3>
+          <span className="text-xs text-gray-500">
+            {new Date().toLocaleDateString('ja-JP', { month: 'numeric', day: 'numeric', weekday: 'short' })}
+          </span>
+        </div>
+        
+        {/* 統計情報 - コンパクトな横並び表示 */}
+        <div className="flex items-center justify-between bg-white rounded-lg p-2 mb-3 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <span className="text-xs text-gray-600">予定</span>
+              <span className="text-sm font-bold text-blue-600 ml-1">
+                {appointments.filter(apt => {
+                  const aptDate = new Date(apt.startTime);
+                  const today = new Date();
+                  return aptDate.toDateString() === today.toDateString() && apt.status === 'scheduled';
+                }).length}
+              </span>
             </div>
-            <div className="text-xs text-gray-500">予定</div>
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span className="text-xs text-gray-600">完了</span>
+              <span className="text-sm font-bold text-green-600 ml-1">
+                {appointments.filter(apt => {
+                  const aptDate = new Date(apt.startTime);
+                  const today = new Date();
+                  return aptDate.toDateString() === today.toDateString() && apt.status === 'completed';
+                }).length}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+              <span className="text-xs text-gray-600">キャンセル</span>
+              <span className="text-sm font-bold text-red-600 ml-1">
+                {appointments.filter(apt => {
+                  const aptDate = new Date(apt.startTime);
+                  const today = new Date();
+                  return aptDate.toDateString() === today.toDateString() && apt.status === 'cancelled';
+                }).length}
+              </span>
+            </div>
           </div>
-          <div>
-            <div className="text-2xl font-bold text-green-600">
-              {appointments.filter(apt => {
-                const aptDate = new Date(apt.startTime);
-                const today = new Date();
-                return aptDate.toDateString() === today.toDateString() && apt.status === 'completed';
-              }).length}
-            </div>
-            <div className="text-xs text-gray-500">完了</div>
-          </div>
-          <div>
-            <div className="text-2xl font-bold text-red-600">
-              {appointments.filter(apt => {
-                const aptDate = new Date(apt.startTime);
-                const today = new Date();
-                return aptDate.toDateString() === today.toDateString() && apt.status === 'cancelled';
-              }).length}
-            </div>
-            <div className="text-xs text-gray-500">キャンセル</div>
+          <div className="text-sm font-semibold text-gray-700">
+            計 {appointments.filter(apt => {
+              const aptDate = new Date(apt.startTime);
+              const today = new Date();
+              return aptDate.toDateString() === today.toDateString();
+            }).length}件
           </div>
         </div>
+
+        {/* 本日の予約リスト - タイムライン形式 */}
+        <div className="space-y-1 max-h-48 overflow-y-auto">
+          {appointments
+            .filter(apt => {
+              const aptDate = new Date(apt.startTime);
+              const today = new Date();
+              return aptDate.toDateString() === today.toDateString();
+            })
+            .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+            .map((apt, index) => {
+              const customer = customers.find(c => c.id === apt.customerId);
+              const startTime = new Date(apt.startTime);
+              const endTime = new Date(apt.endTime);
+              const timeStr = `${startTime.getHours().toString().padStart(2, '0')}:${startTime.getMinutes().toString().padStart(2, '0')}`;
+              const endTimeStr = `${endTime.getHours().toString().padStart(2, '0')}:${endTime.getMinutes().toString().padStart(2, '0')}`;
+              
+              return (
+                <div
+                  key={apt.id}
+                  className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-all hover:shadow-md ${
+                    apt.status === 'cancelled' 
+                      ? 'bg-gray-50 opacity-60' 
+                      : apt.status === 'completed'
+                      ? 'bg-green-50'
+                      : 'bg-white'
+                  } ${index === 0 && apt.status === 'scheduled' ? 'ring-2 ring-blue-400 ring-opacity-50' : ''}`}
+                  onClick={() => handleAppointmentClick(apt)}
+                >
+                  {/* 時間表示 */}
+                  <div className="flex-shrink-0 text-center">
+                    <div className={`text-xs font-bold ${
+                      apt.status === 'cancelled' ? 'text-gray-400' : 
+                      apt.status === 'completed' ? 'text-green-600' : 
+                      'text-blue-600'
+                    }`}>
+                      {timeStr}
+                    </div>
+                    <div className="text-[10px] text-gray-400">
+                      {endTimeStr}
+                    </div>
+                  </div>
+
+                  {/* ステータスバー */}
+                  <div className={`w-1 h-10 rounded-full flex-shrink-0 ${
+                    apt.status === 'cancelled' ? 'bg-gray-300' : 
+                    apt.status === 'completed' ? 'bg-green-400' : 
+                    'bg-blue-400'
+                  }`}></div>
+
+                  {/* 予約情報 */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className={`text-sm font-medium truncate ${
+                        apt.status === 'cancelled' ? 'line-through text-gray-500' : ''
+                      }`}>
+                        {customer ? `${customer.lastName} ${customer.firstName}` : apt.customerName}
+                      </span>
+                      {apt.status === 'cancelled' && (
+                        <span className="text-[10px] text-red-500 font-medium flex-shrink-0 ml-2">キャンセル</span>
+                      )}
+                      {apt.status === 'completed' && (
+                        <span className="text-[10px] text-green-600 font-medium flex-shrink-0 ml-2">完了</span>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between mt-0.5">
+                      <span className="text-xs text-gray-600 truncate">{apt.title}</span>
+                      {apt.notes && (
+                        <span className="text-[10px] text-blue-500 flex-shrink-0 ml-2">メモ有</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* 矢印アイコン */}
+                  <ChevronRight size={16} className="text-gray-400 flex-shrink-0" />
+                </div>
+              );
+            })}
+          
+          {appointments.filter(apt => {
+            const aptDate = new Date(apt.startTime);
+            const today = new Date();
+            return aptDate.toDateString() === today.toDateString();
+          }).length === 0 && (
+            <div className="text-center py-4 text-sm text-gray-500">
+              本日の予約はありません
+            </div>
+          )}
+        </div>
+
+        {/* 次の予約までの時間（予約がある場合） */}
+        {(() => {
+          const now = new Date();
+          const nextAppointment = appointments
+            .filter(apt => {
+              const aptDate = new Date(apt.startTime);
+              return aptDate.toDateString() === now.toDateString() && 
+                     apt.status === 'scheduled' &&
+                     aptDate > now;
+            })
+            .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())[0];
+          
+          if (nextAppointment) {
+            const timeDiff = new Date(nextAppointment.startTime).getTime() - now.getTime();
+            const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+            
+            return (
+              <div className="mt-2 pt-2 border-t border-gray-100">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-gray-500">次の予約まで</span>
+                  <span className="font-semibold text-blue-600">
+                    {hours > 0 ? `${hours}時間${minutes}分` : `${minutes}分`}
+                  </span>
+                </div>
+              </div>
+            );
+          }
+          return null;
+        })()}
       </div>
 
       {/* ビュー切り替えとナビゲーション */}

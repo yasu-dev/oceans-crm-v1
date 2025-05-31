@@ -22,7 +22,7 @@ const LoadingScreen = () => {
           transition={{ delay: 0.3 }}
           className="text-xl font-medium text-gray-800"
         >
-          脱毛サロン顧客管理
+          OCEANS CRM
         </motion.h1>
         <motion.p
           initial={{ opacity: 0 }}

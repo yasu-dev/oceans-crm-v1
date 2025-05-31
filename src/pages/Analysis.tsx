@@ -396,7 +396,7 @@ const Analysis = () => {
             <div>
               <div className="text-sm text-blue-600">月間売上見込み</div>
               <div className="text-2xl font-bold text-blue-800">
-                ¥{currentStats.totalRevenue.toLocaleString()}
+                ¥{Math.round(currentStats.totalRevenue).toLocaleString()}
               </div>
             </div>
             <div>
@@ -408,7 +408,7 @@ const Analysis = () => {
             <div>
               <div className="text-sm text-blue-600">潜在的損失額</div>
               <div className="text-2xl font-bold text-red-800">
-                ¥{currentStats.totalLossAmount.toLocaleString()}
+                ¥{Math.round(currentStats.totalLossAmount).toLocaleString()}
               </div>
             </div>
           </div>
@@ -424,7 +424,7 @@ const Analysis = () => {
                   {currentStats.repeatingWithReservation}
                 </div>
                 <div className="text-xs text-green-600 mt-1">
-                  ¥{currentStats.totalRevenue.toLocaleString()}/月
+                  ¥{Math.round(currentStats.totalRevenue).toLocaleString()}/月
                 </div>
               </div>
               <UserCheck className="text-green-600" size={24} />
@@ -475,7 +475,7 @@ const Analysis = () => {
                   {currentStats.threeMonthsNoVisit}
                 </div>
                 <div className="text-xs text-red-600 mt-1">
-                  損失: ¥{currentStats.totalLossAmount.toLocaleString()}
+                  損失: ¥{Math.round(currentStats.totalLossAmount).toLocaleString()}
                 </div>
               </div>
               <UserX className="text-red-600" size={24} />
@@ -537,7 +537,7 @@ const Analysis = () => {
               <div>
                 <div className="text-sm font-medium text-red-800">現在の想定損失額</div>
                 <div className="text-2xl font-bold text-red-900">
-                  ¥{currentStats.totalLossAmount.toLocaleString()}
+                  ¥{Math.round(currentStats.totalLossAmount).toLocaleString()}
                 </div>
               </div>
               <UserX className="text-red-600" size={32} />
@@ -603,7 +603,7 @@ const Analysis = () => {
                         <UserX size={16} className={config?.icon} />
                       </div>
                       <div>
-                        <div className="font-medium text-sm">{customer.name}</div>
+                        <div className="font-medium text-sm">{customer.firstName} {customer.lastName}</div>
                         <div className="text-xs text-gray-500">
                           最終来店: {lastVisit ? `${daysSinceLastVisit}日前` : '記録なし'}
                         </div>
