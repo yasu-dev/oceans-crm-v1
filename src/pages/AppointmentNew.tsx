@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../contexts/AppContext';
 import { ArrowLeft, Calendar, Clock, User, FileText, Save } from 'lucide-react';
 import { format } from 'date-fns';
@@ -8,10 +8,14 @@ import { ja } from 'date-fns/locale';
 
 const AppointmentNew = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { customers, addAppointment } = useApp();
   
+  // Get selected customer ID from navigation state
+  const selectedCustomerId = location.state?.selectedCustomerId || '';
+  
   const [formData, setFormData] = useState({
-    customerId: '',
+    customerId: selectedCustomerId,
     date: format(new Date(), 'yyyy-MM-dd'),
     startTime: '10:00',
     endTime: '11:30',

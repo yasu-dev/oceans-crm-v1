@@ -20,11 +20,13 @@ import {
 import { format, startOfMonth, endOfMonth, subMonths, addDays } from 'date-fns';
 import { Customer } from '../types/customer';
 import { Visit } from '../types/visit';
+import { useNavigate } from 'react-router-dom';
 
 type DateRange = '1month' | '2months' | '3months' | '6months' | '12months' | 'custom';
 
 const Analysis = () => {
   const { customers, visits } = useApp();
+  const navigate = useNavigate();
   const [dateRange, setDateRange] = useState<DateRange>('1month');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
@@ -570,7 +572,11 @@ const Analysis = () => {
                 const config = statusConfig[status as keyof typeof statusConfig];
                 
                 return (
-                  <div key={customer.id} className="flex items-center justify-between p-2 rounded-lg bg-gray-50">
+                  <div 
+                    key={customer.id} 
+                    className="flex items-center justify-between p-2 rounded-lg bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors"
+                    onClick={() => navigate(`/customers/${customer.id}`)}
+                  >
                     <div className="flex items-center gap-3">
                       <div className={`w-10 h-10 rounded-full flex items-center justify-center ${config?.color}`}>
                         <UserX size={16} className={config?.icon} />

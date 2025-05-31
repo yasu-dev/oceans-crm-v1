@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
-import { Calendar, Phone, MessageCircle } from 'lucide-react';
+import { Calendar, Phone, MessageCircle, CalendarPlus } from 'lucide-react';
 import { Customer } from '../../types/customer';
 import { Visit } from '../../types/visit';
 import StatusBadge from '../ui/StatusBadge';
 import { differenceInDays, parseISO } from 'date-fns';
 import { calculateCustomerStatus } from '../../utils/customerAnalytics';
+import { useNavigate } from 'react-router-dom';
 
 interface CustomerCardProps {
   customer: Customer;
@@ -12,6 +13,7 @@ interface CustomerCardProps {
 }
 
 const CustomerCard = ({ customer, visits }: CustomerCardProps) => {
+  const navigate = useNavigate();
   const status = calculateCustomerStatus(customer, visits);
   
   // Find last visit date
@@ -56,7 +58,17 @@ const CustomerCard = ({ customer, visits }: CustomerCardProps) => {
         
         <div className="flex gap-2 mt-3 justify-end">
           <button 
-            className="p-2 rounded-full bg-blue-50 text-blue-700"
+            className="p-2 rounded-full bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 transition-all"
+            aria-label="新規予約作成"
+            onClick={(e) => {
+              e.preventDefault();
+              navigate('/appointments/new', { state: { selectedCustomerId: customer.id } });
+            }}
+          >
+            <CalendarPlus size={18} />
+          </button>
+          <button 
+            className="p-2 rounded-full bg-[#00B900] text-white hover:bg-[#00A000] transition-colors"
             aria-label="LINE"
             onClick={(e) => {
               e.preventDefault();
@@ -66,7 +78,7 @@ const CustomerCard = ({ customer, visits }: CustomerCardProps) => {
             <MessageCircle size={18} />
           </button>
           <button 
-            className="p-2 rounded-full bg-blue-50 text-blue-700"
+            className="p-2 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-colors"
             aria-label="電話"
             onClick={(e) => {
               e.preventDefault();

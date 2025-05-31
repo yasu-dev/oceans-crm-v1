@@ -144,6 +144,18 @@ const CustomerDetail = () => {
         </div>
       </motion.div>
       
+      {/* Action buttons */}
+      <motion.div variants={itemVariants} className="grid grid-cols-2 gap-3 mb-4">
+        <button className="btn btn-primary">
+          <Phone size={18} />
+          <span>電話する</span>
+        </button>
+        <button className="btn bg-[#00B900] hover:bg-[#00A000] text-white">
+          <MessageCircle size={18} />
+          <span>LINEする</span>
+        </button>
+      </motion.div>
+      
       {/* New Customer Information Section */}
       <motion.div variants={itemVariants} className="card mb-4">
         <h2 className="text-lg font-medium mb-4 text-gray-800">顧客情報詳細</h2>
@@ -296,18 +308,6 @@ const CustomerDetail = () => {
             </div>
           </div>
         </div>
-      </motion.div>
-      
-      {/* Action buttons */}
-      <motion.div variants={itemVariants} className="grid grid-cols-2 gap-3 mb-4">
-        <button className="btn btn-primary">
-          <Phone size={18} />
-          <span>電話する</span>
-        </button>
-        <button className="btn bg-[#00B900] hover:bg-[#00A000] text-white">
-          <MessageCircle size={18} />
-          <span>LINEする</span>
-        </button>
       </motion.div>
       
       {/* Customer analytics */}
