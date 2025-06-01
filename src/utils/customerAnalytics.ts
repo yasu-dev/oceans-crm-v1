@@ -134,35 +134,55 @@ export function calculateFrequencyChange(customer: Customer, visits: Visit[]): n
 
 /**
  * Calculate estimated loss amount for a customer
+ * 都度払いを考慮した算出方法：
+ * 1. 過去の来店履歴から平均施術金額を算出
+ * 2. 平均来店間隔から月平均来店回数を計算
+ * 3. ステータスに応じた損失確率を適用
+ * 4. 月間想定損失額 = 平均施術金額 × 月平均来店回数 × 損失確率
  */
 export function calculateLossAmount(customer: Customer, visits: Visit[]): number {
   const status = calculateCustomerStatus(customer, visits);
   
-  if (status === 'repeating-with-reservation' || status === 'repeating-no-reservation') {
+  if (status === 'repeating-with-reservation' || status === 'repeating-no-reservation' || status === 'graduated') {
     return 0;
   }
   
-  // Get per-visit value
-  const perVisitValue = customer.contract.amount / (customer.contract.remainingVisits || 1);
+  // 顧客の来店履歴を取得
+  const customerVisits = visits.filter(visit => visit.customerId === customer.id);
   
-  // Calculate loss factor based on status
-  let lossFactor = 0;
+  // 平均施術金額を計算
+  let avgAmount = 0;
+  const visitsWithAmount = customerVisits.filter(v => v.amount && v.amount > 0);
+  if (visitsWithAmount.length > 0) {
+    const totalAmount = visitsWithAmount.reduce((sum, v) => sum + (v.amount || 0), 0);
+    avgAmount = totalAmount / visitsWithAmount.length;
+  } else {
+    // 施術金額データがない場合は契約金額から推定
+    avgAmount = customer.contract.amount / 12; // 年間契約と仮定して月額換算
+  }
+  
+  // 平均来店間隔から月平均来店回数を計算
+  const avgInterval = calculateAverageInterval(customer, visits);
+  const monthlyVisits = avgInterval > 0 ? 30 / avgInterval : 1; // 月30日として計算
+  
+  // ステータスに応じた損失確率
+  let lossProbability = 0;
   switch (status) {
     case 'last-month-visited':
-      lossFactor = 0.2;
+      lossProbability = 0.3; // 30%の確率で失客
       break;
     case 'two-months-no-visit':
-      lossFactor = 0.3;
+      lossProbability = 0.6; // 60%の確率で失客
       break;
     case 'three-months-no-visit':
-      lossFactor = 0.5;
-      break;
-    case 'graduated':
-      lossFactor = 0;  // 卒業は損失ではない
+      lossProbability = 0.9; // 90%の確率で失客
       break;
   }
   
-  return Math.round(perVisitValue * lossFactor * customer.contract.remainingVisits);
+  // 月間想定損失額を計算
+  const monthlyLoss = avgAmount * monthlyVisits * lossProbability;
+  
+  return Math.round(monthlyLoss);
 }
 
 /**

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Calendar, Phone, MessageCircle, CalendarPlus } from 'lucide-react';
+import { Calendar, Phone, MessageCircle, CalendarPlus, Clock } from 'lucide-react';
 import { Customer } from '../../types/customer';
 import { Visit } from '../../types/visit';
 import StatusBadge from '../ui/StatusBadge';
@@ -20,6 +20,8 @@ const CustomerCard = ({ customer, visits }: CustomerCardProps) => {
   const customerVisits = visits.filter(visit => visit.customerId === customer.id);
   let lastVisitDate = 'データなし';
   let daysSinceLastVisit = 0;
+  let dateColor = 'text-gray-600';
+  let dateBgColor = 'bg-gray-50';
   
   if (customerVisits.length > 0) {
     const sortedVisits = [...customerVisits].sort((a, b) => 
@@ -31,10 +33,28 @@ const CustomerCard = ({ customer, visits }: CustomerCardProps) => {
     
     if (daysSinceLastVisit === 0) {
       lastVisitDate = '今日';
+      dateColor = 'text-green-600';
+      dateBgColor = 'bg-green-50';
     } else if (daysSinceLastVisit === 1) {
       lastVisitDate = '昨日';
+      dateColor = 'text-green-600';
+      dateBgColor = 'bg-green-50';
+    } else if (daysSinceLastVisit <= 7) {
+      lastVisitDate = `${daysSinceLastVisit}日前`;
+      dateColor = 'text-blue-600';
+      dateBgColor = 'bg-blue-50';
+    } else if (daysSinceLastVisit <= 30) {
+      lastVisitDate = `${daysSinceLastVisit}日前`;
+      dateColor = 'text-yellow-600';
+      dateBgColor = 'bg-yellow-50';
+    } else if (daysSinceLastVisit <= 60) {
+      lastVisitDate = `${daysSinceLastVisit}日前`;
+      dateColor = 'text-orange-600';
+      dateBgColor = 'bg-orange-50';
     } else {
       lastVisitDate = `${daysSinceLastVisit}日前`;
+      dateColor = 'text-red-600';
+      dateBgColor = 'bg-red-50';
     }
   }
   
@@ -47,12 +67,9 @@ const CustomerCard = ({ customer, visits }: CustomerCardProps) => {
         </div>
         
         <div className="flex justify-between text-sm mb-2">
-          <div className="flex items-center gap-1 text-gray-600">
-            <Calendar size={16} />
-            <span>最終来店: {lastVisitDate}</span>
-          </div>
-          <div className="font-medium">
-            ¥{customer.contract.amount.toLocaleString()}
+          <div className={`flex items-center gap-1 px-2 py-1 rounded-full ${dateBgColor} ${dateColor}`}>
+            <Clock size={14} />
+            <span className="font-medium">最終来店: {lastVisitDate}</span>
           </div>
         </div>
         

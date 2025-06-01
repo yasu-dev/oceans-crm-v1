@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useApp } from '../contexts/AppContext';
 import { calculateCustomerStatus, hasVisitedInMonth, hasFutureReservation, calculateLossAmount } from '../utils/customerAnalytics';
-import { TrendingUp, TrendingDown, Calendar, Users, UserCheck, UserX, DollarSign } from 'lucide-react';
+import { TrendingUp, TrendingDown, Calendar, Users, UserCheck, UserX, DollarSign, ArrowUpDown, ArrowUp, ArrowDown, Info, X } from 'lucide-react';
 import StatusDistribution from '../components/dashboard/StatusDistribution';
 import { 
   LineChart, 
@@ -23,6 +23,7 @@ import { Visit } from '../types/visit';
 import { useNavigate } from 'react-router-dom';
 
 type DateRange = '1month' | '2months' | '3months' | '6months' | '12months' | 'custom';
+type SortOrder = 'asc' | 'desc';
 
 const Analysis = () => {
   const { customers, visits } = useApp();
@@ -30,6 +31,9 @@ const Analysis = () => {
   const [dateRange, setDateRange] = useState<DateRange>('1month');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
+  const [riskSortOrder, setRiskSortOrder] = useState<SortOrder>('desc'); // デフォルトは降順（最近の来店が上）
+  const [showInfoModal, setShowInfoModal] = useState(false);
+  const [selectedMetric, setSelectedMetric] = useState<'active' | 'revenue' | 'risk' | 'loss' | null>(null);
   
   // Get the effective date range
   const getEffectiveDateRange = () => {
@@ -294,6 +298,31 @@ const Analysis = () => {
     visible: { y: 0, opacity: 1 }
   };
   
+  // 指標の説明
+  const metricDescriptions = {
+    active: {
+      title: 'アクティブ顧客数',
+      description: '3ヶ月以内に来店があり、かつ卒業していない顧客の総数です。リピート中の顧客、先月・先々月に来店した顧客が含まれます。'
+    },
+    revenue: {
+      title: '月間売上見込み',
+      description: '過去の来店履歴から算出した平均施術金額と来店頻度を基に、アクティブ顧客からの月間売上予測額を表示しています。'
+    },
+    risk: {
+      title: '失客リスク顧客',
+      description: '先月来店したが今月未来店の顧客と、先々月来店したが2ヶ月未来店の顧客の合計数です。早急なフォローアップが必要な顧客を示しています。'
+    },
+    loss: {
+      title: '潜在的損失額',
+      description: '失客リスクの高い顧客（3ヶ月以上未来店）から失われている月間売上の推定額です。過去の平均施術金額と来店頻度、失客確率を基に算出しています。'
+    }
+  };
+  
+  const openInfoModal = (metric: 'active' | 'revenue' | 'risk' | 'loss') => {
+    setSelectedMetric(metric);
+    setShowInfoModal(true);
+  };
+  
   return (
     <div className="page-container">
       <motion.div
@@ -391,25 +420,57 @@ const Analysis = () => {
           <h3 className="font-semibold mb-3 text-blue-800">サマリー</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <div className="text-sm text-blue-600">アクティブ顧客数</div>
+              <div className="flex items-center gap-1 text-sm text-blue-600">
+                <span>アクティブ顧客数</span>
+                <button 
+                  onClick={() => openInfoModal('active')}
+                  className="text-blue-500 hover:text-blue-700"
+                >
+                  <Info size={14} />
+                </button>
+              </div>
               <div className="text-2xl font-bold text-blue-800">
                 {currentStats.total - currentStats.threeMonthsNoVisit - currentStats.graduated}名
               </div>
             </div>
             <div>
-              <div className="text-sm text-blue-600">月間売上見込み</div>
+              <div className="flex items-center gap-1 text-sm text-blue-600">
+                <span>月間売上見込み</span>
+                <button 
+                  onClick={() => openInfoModal('revenue')}
+                  className="text-blue-500 hover:text-blue-700"
+                >
+                  <Info size={14} />
+                </button>
+              </div>
               <div className="text-2xl font-bold text-blue-800">
                 ¥{Math.round(currentStats.totalRevenue).toLocaleString()}
               </div>
             </div>
             <div>
-              <div className="text-sm text-blue-600">失客リスク顧客</div>
+              <div className="flex items-center gap-1 text-sm text-blue-600">
+                <span>失客リスク顧客</span>
+                <button 
+                  onClick={() => openInfoModal('risk')}
+                  className="text-blue-500 hover:text-blue-700"
+                >
+                  <Info size={14} />
+                </button>
+              </div>
               <div className="text-2xl font-bold text-orange-800">
                 {currentStats.lastMonthVisited + currentStats.twoMonthsNoVisit}名
               </div>
             </div>
             <div>
-              <div className="text-sm text-blue-600">潜在的損失額</div>
+              <div className="flex items-center gap-1 text-sm text-blue-600">
+                <span>潜在的損失額</span>
+                <button 
+                  onClick={() => openInfoModal('loss')}
+                  className="text-blue-500 hover:text-blue-700"
+                >
+                  <Info size={14} />
+                </button>
+              </div>
               <div className="text-2xl font-bold text-red-800">
                 ¥{Math.round(currentStats.totalLossAmount).toLocaleString()}
               </div>
@@ -521,7 +582,16 @@ const Analysis = () => {
           
           {/* 失客リスクの高い顧客リスト */}
           <div className="space-y-2">
-            <div className="text-sm font-medium text-gray-700 mb-2">失客リスクの高い顧客</div>
+            <div className="flex justify-between items-center mb-2">
+              <div className="text-sm font-medium text-gray-700">失客リスクの高い顧客</div>
+              <button
+                onClick={() => setRiskSortOrder(riskSortOrder === 'desc' ? 'asc' : 'desc')}
+                className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                <span>最終来店</span>
+                {riskSortOrder === 'desc' ? <ArrowDown size={14} /> : <ArrowUp size={14} />}
+              </button>
+            </div>
             {customers
               .filter(customer => {
                 const status = calculateCustomerStatus(customer, visits);
@@ -530,16 +600,38 @@ const Analysis = () => {
                        status === 'last-month-visited';
               })
               .sort((a, b) => {
-                const aStatus = calculateCustomerStatus(a, visits);
-                const bStatus = calculateCustomerStatus(b, visits);
-                // ステータスの優先順位でソート
-                const statusPriority = {
-                  'three-months-no-visit': 1,
-                  'two-months-no-visit': 2,
-                  'last-month-visited': 3,
-                };
-                return (statusPriority[aStatus as keyof typeof statusPriority] || 999) - 
-                       (statusPriority[bStatus as keyof typeof statusPriority] || 999);
+                // 最終来店日でソート
+                const aVisits = visits.filter(v => v.customerId === a.id);
+                const bVisits = visits.filter(v => v.customerId === b.id);
+                
+                let aLastVisit: Date | null = null;
+                let bLastVisit: Date | null = null;
+                
+                if (aVisits.length > 0) {
+                  const sortedAVisits = [...aVisits].sort((v1, v2) => 
+                    new Date(v2.date).getTime() - new Date(v1.date).getTime()
+                  );
+                  aLastVisit = new Date(sortedAVisits[0].date);
+                }
+                
+                if (bVisits.length > 0) {
+                  const sortedBVisits = [...bVisits].sort((v1, v2) => 
+                    new Date(v2.date).getTime() - new Date(v1.date).getTime()
+                  );
+                  bLastVisit = new Date(sortedBVisits[0].date);
+                }
+                
+                // 来店履歴がない場合は最後に表示
+                if (!aLastVisit && !bLastVisit) return 0;
+                if (!aLastVisit) return 1;
+                if (!bLastVisit) return -1;
+                
+                // ソート順に応じて並べ替え
+                if (riskSortOrder === 'desc') {
+                  return bLastVisit.getTime() - aLastVisit.getTime(); // 降順（最近が上）
+                } else {
+                  return aLastVisit.getTime() - bLastVisit.getTime(); // 昇順（古いが上）
+                }
               })
               .slice(0, 10)
               .map(customer => {
@@ -550,6 +642,39 @@ const Analysis = () => {
                 const daysSinceLastVisit = lastVisit 
                   ? Math.floor((new Date().getTime() - new Date(lastVisit.date).getTime()) / (1000 * 60 * 60 * 24))
                   : null;
+                
+                // 最終来店日の表示とカラー設定
+                let lastVisitText = '記録なし';
+                let lastVisitColor = 'text-gray-500';
+                let lastVisitBgColor = 'bg-gray-100';
+                
+                if (daysSinceLastVisit !== null) {
+                  if (daysSinceLastVisit === 0) {
+                    lastVisitText = '今日';
+                    lastVisitColor = 'text-green-600';
+                    lastVisitBgColor = 'bg-green-50';
+                  } else if (daysSinceLastVisit === 1) {
+                    lastVisitText = '昨日';
+                    lastVisitColor = 'text-green-600';
+                    lastVisitBgColor = 'bg-green-50';
+                  } else if (daysSinceLastVisit <= 7) {
+                    lastVisitText = `${daysSinceLastVisit}日前`;
+                    lastVisitColor = 'text-blue-600';
+                    lastVisitBgColor = 'bg-blue-50';
+                  } else if (daysSinceLastVisit <= 30) {
+                    lastVisitText = `${daysSinceLastVisit}日前`;
+                    lastVisitColor = 'text-yellow-600';
+                    lastVisitBgColor = 'bg-yellow-50';
+                  } else if (daysSinceLastVisit <= 60) {
+                    lastVisitText = `${daysSinceLastVisit}日前`;
+                    lastVisitColor = 'text-orange-600';
+                    lastVisitBgColor = 'bg-orange-50';
+                  } else {
+                    lastVisitText = `${daysSinceLastVisit}日前`;
+                    lastVisitColor = 'text-red-600';
+                    lastVisitBgColor = 'bg-red-50';
+                  }
+                }
                 
                 const statusConfig = {
                   'three-months-no-visit': { 
@@ -582,18 +707,16 @@ const Analysis = () => {
                         <UserX size={16} className={config?.icon} />
                       </div>
                       <div>
-                        <div className="font-medium text-sm">{customer.firstName} {customer.lastName}</div>
-                        <div className="text-xs text-gray-500">
-                          最終来店: {lastVisit ? `${daysSinceLastVisit}日前` : '記録なし'}
+                        <div className="font-medium text-sm">{customer.lastName} {customer.firstName}</div>
+                        <div className={`inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full mt-1 ${lastVisitBgColor} ${lastVisitColor}`}>
+                          <Calendar size={12} />
+                          <span className="font-medium">{lastVisitText}</span>
                         </div>
                       </div>
                     </div>
                     <div className="text-right">
                       <div className={`text-xs px-2 py-1 rounded ${config?.color}`}>
                         {config?.label}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        月額: ¥{Math.round(customer.contract.amount / 12).toLocaleString()}
                       </div>
                     </div>
                   </div>
@@ -602,6 +725,42 @@ const Analysis = () => {
           </div>
         </motion.div>
       </motion.div>
+      
+      {/* 指標説明モーダル */}
+      {showInfoModal && selectedMetric && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <motion.div 
+            className="bg-white rounded-lg p-6 max-w-md w-full"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+          >
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-lg font-medium">
+                {metricDescriptions[selectedMetric].title}
+              </h3>
+              <button 
+                onClick={() => setShowInfoModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <p className="text-gray-600 text-sm">
+              {metricDescriptions[selectedMetric].description}
+            </p>
+            
+            <div className="mt-6 flex justify-end">
+              <button 
+                onClick={() => setShowInfoModal(false)}
+                className="btn btn-secondary"
+              >
+                閉じる
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };

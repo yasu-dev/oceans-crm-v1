@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import CustomerCard from '../components/customer/CustomerCard';
 import { Customer } from '../types/customer';
 import { calculateCustomerStatus, hasVisitedInMonth, hasFutureReservation } from '../utils/customerAnalytics';
-import { Filter, Plus } from 'lucide-react';
+import { Filter, Plus, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 type FilterTab = 
@@ -15,6 +15,8 @@ type FilterTab =
   | 'repeating-no-reservation'    // リピート中(予約なし)
   | 'three-months-no-visit'    // 3ヶ月以上未来店
   | 'graduated';               // 卒業
+
+type SortOrder = 'asc' | 'desc';
 
 const CustomerList = () => {
   const { customers, visits } = useApp();
@@ -27,6 +29,7 @@ const CustomerList = () => {
   
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [localSearch, setLocalSearch] = useState(searchQuery);
+  const [sortOrder, setSortOrder] = useState<SortOrder>('desc'); // デフォルトは降順（最近の来店が上）
   
   // Apply filters and search
   const filteredCustomers = useMemo(() => {
@@ -92,12 +95,16 @@ const CustomerList = () => {
       if (!aLastVisit) return 1;
       if (!bLastVisit) return -1;
       
-      // 最終来店日が新しい順（降順）
-      return bLastVisit.getTime() - aLastVisit.getTime();
+      // ソート順に応じて並べ替え
+      if (sortOrder === 'desc') {
+        return bLastVisit.getTime() - aLastVisit.getTime(); // 降順（最近が上）
+      } else {
+        return aLastVisit.getTime() - bLastVisit.getTime(); // 昇順（古いが上）
+      }
     });
 
     return customersToFilter;
-  }, [customers, visits, activeTab, searchQuery]);
+  }, [customers, visits, activeTab, searchQuery, sortOrder]);
   
   // Tab configuration
   const tabs: { key: FilterTab; label: string; color: string }[] = [
@@ -176,6 +183,13 @@ const CustomerList = () => {
         <h2 className="text-sm font-medium text-gray-500">
           {filteredCustomers.length}件の顧客
         </h2>
+        <button
+          onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
+          className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+        >
+          <span>最終来店</span>
+          {sortOrder === 'desc' ? <ArrowDown size={16} /> : <ArrowUp size={16} />}
+        </button>
       </div>
       
       <motion.div

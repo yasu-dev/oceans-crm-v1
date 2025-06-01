@@ -23,7 +23,10 @@ import {
   AlertTriangle,
   Edit,
   PlusCircle,
-  X
+  X,
+  ChevronDown,
+  ChevronUp,
+  DollarSign
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -35,6 +38,21 @@ const CustomerDetail = () => {
   const [visitNotes, setVisitNotes] = useState('');
   const [selectedAppointment, setSelectedAppointment] = useState<typeof appointments[0] | null>(null);
   const [selectedVisit, setSelectedVisit] = useState<typeof visits[0] | null>(null);
+  
+  // 折り畳み状態管理
+  const [expandedSections, setExpandedSections] = useState({
+    customerInfo: false,
+    healthInfo: false,
+    hairRemovalInfo: false,
+    otherInfo: false,
+  });
+  
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
   
   const customer = customers.find(c => c.id === id);
   
@@ -62,6 +80,11 @@ const CustomerDetail = () => {
   const riskScore = calculateRiskScore(customer, visits);
   const priority = getFollowUpPriority(riskScore);
   const recommendation = getRecommendedFollowUp(riskScore);
+  
+  // 施術金額の計算
+  const customerVisitsWithAmount = customerVisits.filter(v => v.amount && v.amount > 0);
+  const totalAmount = customerVisitsWithAmount.reduce((sum, v) => sum + (v.amount || 0), 0);
+  const avgAmount = customerVisitsWithAmount.length > 0 ? Math.round(totalAmount / customerVisitsWithAmount.length) : 0;
   
   // Sort visits by date (newest first)
   const sortedVisits = [...customerVisits].sort((a, b) => 
@@ -116,32 +139,6 @@ const CustomerDetail = () => {
           </h1>
           <StatusBadge status={status} size="md" />
         </div>
-        
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          <div>
-            <div className="text-xs text-gray-500 mb-1">電話番号</div>
-            <div>{customer.phone}</div>
-          </div>
-          <div>
-            <div className="text-xs text-gray-500 mb-1">リスクスコア</div>
-            <div className="flex items-center">
-              <span className="font-medium">{riskScore}</span>
-              <span className="text-xs ml-1">/100</span>
-              <PriorityBadge priority={priority} size="sm" />
-            </div>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <div className="text-xs text-gray-500 mb-1">メールアドレス</div>
-            <div className="text-sm">{customer.email}</div>
-          </div>
-          <div>
-            <div className="text-xs text-gray-500 mb-1">施術金額</div>
-            <div className="font-medium">¥{customer.contract.amount.toLocaleString()}</div>
-          </div>
-        </div>
       </motion.div>
       
       {/* Action buttons */}
@@ -158,156 +155,188 @@ const CustomerDetail = () => {
       
       {/* New Customer Information Section */}
       <motion.div variants={itemVariants} className="card mb-4">
-        <h2 className="text-lg font-medium mb-4 text-gray-800">顧客情報詳細</h2>
+        <button
+          onClick={() => toggleSection('customerInfo')}
+          className="w-full flex justify-between items-center text-left mb-4"
+        >
+          <h2 className="text-lg font-medium text-gray-800">顧客情報詳細</h2>
+          {expandedSections.customerInfo ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+        </button>
         
-        <div className="space-y-4">
-          {/* 基本情報 */}
-          <div className="border-b border-gray-100 pb-4">
-            <h3 className="text-sm font-medium text-gray-600 mb-3">基本情報</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-              <InfoItem label="顧客番号" value={customer.id} />
-              <InfoItem label="LINE ID" value={customer.lineId} />
-              <InfoItem label="氏名" value={`${customer.lastName} ${customer.firstName}`} />
-              <InfoItem label="氏名 (カナ)" value={`${customer.lastNameKana} ${customer.firstNameKana}`} />
-              <InfoItem label="性別" value={customer.gender === 'male' ? '男性' : customer.gender === 'female' ? '女性' : 'その他'} />
-              <InfoItem label="生年月日" value={customer.birthday ? format(parseISO(customer.birthday), 'yyyy年M月d日') : '未設定'} />
+        {expandedSections.customerInfo && (
+          <div className="space-y-4">
+            {/* 基本情報 */}
+            <div className="border-b border-gray-100 pb-4">
+              <h3 className="text-sm font-medium text-gray-600 mb-3">基本情報</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                <InfoItem label="顧客番号" value={customer.id} />
+                <InfoItem label="LINE ID" value={customer.lineId} />
+                <InfoItem label="氏名" value={`${customer.lastName} ${customer.firstName}`} />
+                <InfoItem label="氏名 (カナ)" value={`${customer.lastNameKana} ${customer.firstNameKana}`} />
+                <InfoItem label="性別" value={customer.gender === 'male' ? '男性' : customer.gender === 'female' ? '女性' : 'その他'} />
+                <InfoItem label="生年月日" value={customer.birthday ? format(parseISO(customer.birthday), 'yyyy年M月d日') : '未設定'} />
+              </div>
+            </div>
+            
+            {/* 連絡先情報 */}
+            <div className="border-b border-gray-100 pb-4">
+              <h3 className="text-sm font-medium text-gray-600 mb-3">連絡先</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                <InfoItem label="電話番号" value={customer.phone} />
+                <InfoItem label="メールアドレス" value={customer.email} />
+                <InfoItem label="郵便番号" value={customer.postalCode} />
+                <InfoItem label="都道府県" value={customer.prefecture} />
+                <InfoItem label="市区町村" value={customer.city} />
+                <InfoItem label="住所" value={customer.address1} />
+              </div>
+            </div>
+            
+            {/* 職業・来店情報 */}
+            <div>
+              <h3 className="text-sm font-medium text-gray-600 mb-3">職業・来店情報</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                <InfoItem label="職業" value={customer.occupation} />
+                <InfoItem label="職業詳細" value={customer.occupationDetail} />
+                <InfoItem label="来店動機" value={customer.storeVisitReason} />
+                <InfoItem label="来店動機詳細" value={customer.storeVisitReasonDetail} />
+              </div>
             </div>
           </div>
-          
-          {/* 連絡先情報 */}
-          <div className="border-b border-gray-100 pb-4">
-            <h3 className="text-sm font-medium text-gray-600 mb-3">連絡先</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-              <InfoItem label="電話番号" value={customer.phone} />
-              <InfoItem label="メールアドレス" value={customer.email} />
-              <InfoItem label="郵便番号" value={customer.postalCode} />
-              <InfoItem label="都道府県" value={customer.prefecture} />
-              <InfoItem label="市区町村" value={customer.city} />
-              <InfoItem label="住所" value={customer.address1} />
-            </div>
-          </div>
-          
-          {/* 職業・来店情報 */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-600 mb-3">職業・来店情報</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-              <InfoItem label="職業" value={customer.occupation} />
-              <InfoItem label="職業詳細" value={customer.occupationDetail} />
-              <InfoItem label="来店動機" value={customer.storeVisitReason} />
-              <InfoItem label="来店動機詳細" value={customer.storeVisitReasonDetail} />
-            </div>
-          </div>
-        </div>
+        )}
       </motion.div>
 
       <motion.div variants={itemVariants} className="card mb-4">
-        <h2 className="text-lg font-medium mb-4 text-gray-800">健康・体質情報</h2>
+        <button
+          onClick={() => toggleSection('healthInfo')}
+          className="w-full flex justify-between items-center text-left mb-4"
+        >
+          <h2 className="text-lg font-medium text-gray-800">健康・体質情報</h2>
+          {expandedSections.healthInfo ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+        </button>
         
-        <div className="space-y-4">
-          {/* アレルギー・体調 */}
-          <div className="border-b border-gray-100 pb-4">
-            <h3 className="text-sm font-medium text-gray-600 mb-3">アレルギー・体調</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-              <InfoItem label="体調・アレルギー" value={customer.physicalConditionAllergy} />
-              <InfoItem label="詳細" value={customer.physicalConditionAllergyDetail} />
+        {expandedSections.healthInfo && (
+          <div className="space-y-4">
+            {/* アレルギー・体調 */}
+            <div className="border-b border-gray-100 pb-4">
+              <h3 className="text-sm font-medium text-gray-600 mb-3">アレルギー・体調</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                <InfoItem label="体調・アレルギー" value={customer.physicalConditionAllergy} />
+                <InfoItem label="詳細" value={customer.physicalConditionAllergyDetail} />
+              </div>
+            </div>
+            
+            {/* 肌・化粧品 */}
+            <div className="border-b border-gray-100 pb-4">
+              <h3 className="text-sm font-medium text-gray-600 mb-3">肌・化粧品</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                <InfoItem label="化粧品" value={customer.cosmetics} />
+                <InfoItem label="化粧品詳細" value={customer.cosmeticsDetail} />
+                <InfoItem label="肌の悩み" value={customer.skinConcerns} />
+                <InfoItem label="肌の悩み詳細" value={customer.skinConcernsDetail} />
+              </div>
+            </div>
+            
+            {/* 妊娠・子供 */}
+            <div className="border-b border-gray-100 pb-4">
+              <h3 className="text-sm font-medium text-gray-600 mb-3">妊娠・子供</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                <InfoItem label="妊娠" value={customer.pregnancy} />
+                <InfoItem label="妊娠詳細" value={customer.pregnancyDetail} />
+                <InfoItem label="子供" value={customer.children} />
+                <InfoItem label="子供詳細" value={customer.childrenDetail} />
+              </div>
+            </div>
+            
+            {/* 既往歴・薬 */}
+            <div>
+              <h3 className="text-sm font-medium text-gray-600 mb-3">既往歴・薬</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                <InfoItem label="既往歴" value={customer.medicalHistory} />
+                <InfoItem label="既往歴詳細" value={customer.medicalHistoryDetail} />
+                <InfoItem label="服用中の薬" value={customer.medication} />
+                <InfoItem label="服用中の薬詳細" value={customer.medicationDetail} />
+              </div>
             </div>
           </div>
-          
-          {/* 肌・化粧品 */}
-          <div className="border-b border-gray-100 pb-4">
-            <h3 className="text-sm font-medium text-gray-600 mb-3">肌・化粧品</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-              <InfoItem label="化粧品" value={customer.cosmetics} />
-              <InfoItem label="化粧品詳細" value={customer.cosmeticsDetail} />
-              <InfoItem label="肌の悩み" value={customer.skinConcerns} />
-              <InfoItem label="肌の悩み詳細" value={customer.skinConcernsDetail} />
-            </div>
-          </div>
-          
-          {/* 妊娠・子供 */}
-          <div className="border-b border-gray-100 pb-4">
-            <h3 className="text-sm font-medium text-gray-600 mb-3">妊娠・子供</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-              <InfoItem label="妊娠" value={customer.pregnancy} />
-              <InfoItem label="妊娠詳細" value={customer.pregnancyDetail} />
-              <InfoItem label="子供" value={customer.children} />
-              <InfoItem label="子供詳細" value={customer.childrenDetail} />
-            </div>
-          </div>
-          
-          {/* 既往歴・薬 */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-600 mb-3">既往歴・薬</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-              <InfoItem label="既往歴" value={customer.medicalHistory} />
-              <InfoItem label="既往歴詳細" value={customer.medicalHistoryDetail} />
-              <InfoItem label="服用中の薬" value={customer.medication} />
-              <InfoItem label="服用中の薬詳細" value={customer.medicationDetail} />
-            </div>
-          </div>
-        </div>
+        )}
       </motion.div>
 
       <motion.div variants={itemVariants} className="card mb-4">
-        <h2 className="text-lg font-medium mb-4 text-gray-800">脱毛経験・希望</h2>
+        <button
+          onClick={() => toggleSection('hairRemovalInfo')}
+          className="w-full flex justify-between items-center text-left mb-4"
+        >
+          <h2 className="text-lg font-medium text-gray-800">脱毛経験・希望</h2>
+          {expandedSections.hairRemovalInfo ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+        </button>
         
-        <div className="space-y-4">
-          {/* 自己処理 */}
-          <div className="border-b border-gray-100 pb-4">
-            <h3 className="text-sm font-medium text-gray-600 mb-3">自己処理</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-              <InfoItem label="自己処理方法" value={customer.selfCareHairRemoval} />
-              <InfoItem label="詳細" value={customer.selfCareHairRemovalDetail} />
+        {expandedSections.hairRemovalInfo && (
+          <div className="space-y-4">
+            {/* 自己処理 */}
+            <div className="border-b border-gray-100 pb-4">
+              <h3 className="text-sm font-medium text-gray-600 mb-3">自己処理</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                <InfoItem label="自己処理方法" value={customer.selfCareHairRemoval} />
+                <InfoItem label="詳細" value={customer.selfCareHairRemovalDetail} />
+              </div>
+            </div>
+            
+            {/* 脱毛経験 */}
+            <div className="border-b border-gray-100 pb-4">
+              <h3 className="text-sm font-medium text-gray-600 mb-3">脱毛経験</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                <InfoItem label="脱毛経験" value={customer.hairRemovalExperience} />
+                <InfoItem label="経験サロン" value={customer.hairRemovalExperienceSalon} />
+                <InfoItem label="詳細" value={customer.hairRemovalExperienceDetail} />
+                <InfoItem label="脱毛トラブル" value={customer.hairRemovalTrouble} />
+                <InfoItem label="トラブル詳細" value={customer.hairRemovalTroubleDetail} />
+              </div>
+            </div>
+            
+            {/* 理想 */}
+            <div>
+              <h3 className="text-sm font-medium text-gray-600 mb-3">理想</h3>
+              <div className="grid grid-cols-1 gap-y-3">
+                <InfoItem label="美の理想イメージ" value={customer.idealBeautyImage} />
+              </div>
             </div>
           </div>
-          
-          {/* 脱毛経験 */}
-          <div className="border-b border-gray-100 pb-4">
-            <h3 className="text-sm font-medium text-gray-600 mb-3">脱毛経験</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-              <InfoItem label="脱毛経験" value={customer.hairRemovalExperience} />
-              <InfoItem label="経験サロン" value={customer.hairRemovalExperienceSalon} />
-              <InfoItem label="詳細" value={customer.hairRemovalExperienceDetail} />
-              <InfoItem label="脱毛トラブル" value={customer.hairRemovalTrouble} />
-              <InfoItem label="トラブル詳細" value={customer.hairRemovalTroubleDetail} />
-            </div>
-          </div>
-          
-          {/* 理想 */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-600 mb-3">理想</h3>
-            <div className="grid grid-cols-1 gap-y-3">
-              <InfoItem label="美の理想イメージ" value={customer.idealBeautyImage} />
-            </div>
-          </div>
-        </div>
+        )}
       </motion.div>
       
       <motion.div variants={itemVariants} className="card mb-4">
-        <h2 className="text-lg font-medium mb-4 text-gray-800">その他の情報</h2>
+        <button
+          onClick={() => toggleSection('otherInfo')}
+          className="w-full flex justify-between items-center text-left mb-4"
+        >
+          <h2 className="text-lg font-medium text-gray-800">その他の情報</h2>
+          {expandedSections.otherInfo ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+        </button>
         
-        <div className="space-y-4">
-          {/* メモ情報 */}
-          <div className="border-b border-gray-100 pb-4">
-            <h3 className="text-sm font-medium text-gray-600 mb-3">メモ・コメント</h3>
-            <div className="grid grid-cols-1 gap-y-3">
-              <InfoItem label="コメント" value={customer.comment} />
-              <InfoItem label="次回予約メモ" value={customer.nextAppointmentNote} />
-              <InfoItem label="前回予約メモ" value={customer.previousAppointmentNote} />
+        {expandedSections.otherInfo && (
+          <div className="space-y-4">
+            {/* メモ情報 */}
+            <div className="border-b border-gray-100 pb-4">
+              <h3 className="text-sm font-medium text-gray-600 mb-3">メモ・コメント</h3>
+              <div className="grid grid-cols-1 gap-y-3">
+                <InfoItem label="コメント" value={customer.comment} />
+                <InfoItem label="次回予約メモ" value={customer.nextAppointmentNote} />
+                <InfoItem label="前回予約メモ" value={customer.previousAppointmentNote} />
+              </div>
+            </div>
+            
+            {/* 契約・紹介情報 */}
+            <div>
+              <h3 className="text-sm font-medium text-gray-600 mb-3">契約・紹介</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                <InfoItem label="契約者" value={customer.contractor} />
+                <InfoItem label="サブ契約者" value={customer.subContractor} />
+                <InfoItem label="紹介者" value={customer.introducer} />
+                <InfoItem label="サブ紹介者" value={customer.subIntroducer} />
+              </div>
             </div>
           </div>
-          
-          {/* 契約・紹介情報 */}
-          <div>
-            <h3 className="text-sm font-medium text-gray-600 mb-3">契約・紹介</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-              <InfoItem label="契約者" value={customer.contractor} />
-              <InfoItem label="サブ契約者" value={customer.subContractor} />
-              <InfoItem label="紹介者" value={customer.introducer} />
-              <InfoItem label="サブ紹介者" value={customer.subIntroducer} />
-            </div>
-          </div>
-        </div>
+        )}
       </motion.div>
       
       {/* Customer analytics */}
@@ -342,6 +371,40 @@ const CustomerDetail = () => {
             <div className="text-sm text-gray-500">来店頻度の変化</div>
             <div className={`font-medium ${freqChange > 0 ? 'text-green-600' : freqChange < 0 ? 'text-red-600' : ''}`}>
               {freqChange > 0 ? '+' : ''}{freqChange}%
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-3 mb-3">
+          <div className="p-2 rounded-full bg-green-50 text-green-700">
+            <DollarSign size={20} />
+          </div>
+          <div>
+            <div className="text-sm text-gray-500">平均施術金額</div>
+            <div className="font-medium">¥{avgAmount.toLocaleString()}</div>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-3 mb-3">
+          <div className="p-2 rounded-full bg-green-50 text-green-700">
+            <DollarSign size={20} />
+          </div>
+          <div>
+            <div className="text-sm text-gray-500">累積施術金額</div>
+            <div className="font-medium">¥{totalAmount.toLocaleString()}</div>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-3 mb-3">
+          <div className="p-2 rounded-full bg-red-50 text-red-700">
+            <AlertTriangle size={20} />
+          </div>
+          <div>
+            <div className="text-sm text-gray-500">リスクスコア</div>
+            <div className="flex items-center">
+              <span className="font-medium">{riskScore}</span>
+              <span className="text-xs ml-1">/100</span>
+              <PriorityBadge priority={priority} size="sm" />
             </div>
           </div>
         </div>
@@ -430,12 +493,21 @@ const CustomerDetail = () => {
                     <Calendar size={20} />
                   </div>
                   <div className="flex-1">
-                    <div className="font-medium">
-                      {format(parseISO(visit.date), 'yyyy年M月d日(E)', { locale: ja })}
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="font-medium">
+                          {format(parseISO(visit.date), 'yyyy年M月d日(E)', { locale: ja })}
+                        </div>
+                        {visit.notes && (
+                          <div className="text-sm text-gray-600 mt-1">{visit.notes}</div>
+                        )}
+                      </div>
+                      {visit.amount && (
+                        <div className="text-sm font-medium text-gray-700">
+                          ¥{visit.amount.toLocaleString()}
+                        </div>
+                      )}
                     </div>
-                    {visit.notes && (
-                      <div className="text-sm text-gray-600 mt-1">{visit.notes}</div>
-                    )}
                   </div>
                 </div>
               </div>
